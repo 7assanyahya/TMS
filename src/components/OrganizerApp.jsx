@@ -3,30 +3,27 @@ import { ArrowLeft, MapPin, AlertTriangle, Activity, CheckCircle } from 'lucide-
 import { useTrafficData } from '../hooks/useTrafficData';
 import './OrganizerApp.css';
 
-const MY_ID = 1; // Simulating "Unit Alpha"
-const MY_NAME = "Unit Alpha";
-
-export default function OrganizerApp({ onBack }) {
+export default function OrganizerApp({ onBack, user }) {
     const { organizers, updateOrganizer, addOrganizer } = useTrafficData();
     const [active, setActive] = useState(true);
 
     // Find my current state
-    const me = organizers.find(o => o.id === MY_ID) || { status: 'clear' };
+    const me = organizers.find(o => o.id === user.id) || { status: 'clear' };
 
     // Register myself if I don't exist
     useEffect(() => {
-        const exists = organizers.find(o => o.id === MY_ID);
+        const exists = organizers.find(o => o.id === user.id);
         if (!exists) {
             addOrganizer({
-                id: MY_ID,
-                name: MY_NAME,
+                id: user.id,
+                name: user.name,
                 lat: 24.7136, // Default fallback
                 lng: 46.6753,
                 status: 'clear',
                 active: true
             });
         }
-    }, [organizers, addOrganizer]);
+    }, [organizers, addOrganizer, user]);
 
     const [gpsStatus, setGpsStatus] = useState('waiting'); // waiting, active, error
 
@@ -47,7 +44,7 @@ export default function OrganizerApp({ onBack }) {
 
         const handleSuccess = (position) => {
             setGpsStatus('active');
-            updateOrganizer(MY_ID, {
+            updateOrganizer(user.id, {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude
             });
@@ -65,17 +62,17 @@ export default function OrganizerApp({ onBack }) {
         });
 
         return () => navigator.geolocation.clearWatch(watchId);
-    }, [active, updateOrganizer]);
+    }, [active, updateOrganizer, user.id]);
 
     const handleReport = (status) => {
-        updateOrganizer(MY_ID, { status });
+        updateOrganizer(user.id, { status });
         // In a real app, we might also send a dedicated alert event
     };
 
     const toggleActive = () => {
         const newState = !active;
         setActive(newState);
-        updateOrganizer(MY_ID, { active: newState });
+        updateOrganizer(user.id, { active: newState });
     };
 
     return (
@@ -85,9 +82,9 @@ export default function OrganizerApp({ onBack }) {
                     <ArrowLeft size={20} className="text-white" />
                 </button>
                 <div className="org-profile">
-                    <div className="profile-avatar">A</div>
+                    <div className="profile-avatar">{user.name.charAt(0).toUpperCase()}</div>
                     <div>
-                        <h3 className="text-white font-bold">{MY_NAME}</h3>
+                        <h3 className="text-white font-bold">{user.name}</h3>
                         <div className={`status-badge ${active ? 'status-active' : 'status-busy'}`}>
                             {active ? 'Tracking Active' : 'Off Duty'}
                         </div>
