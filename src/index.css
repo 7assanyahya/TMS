@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import 'leaflet/dist/leaflet.css';
+
+:root {
+  /* HSL Colors for dynamic adjustments */
+  --hue-brand: 210;
+  --hue-success: 150;
+  --hue-warning: 35;
+  --hue-danger: 0;
+
+  /* Brand Colors */
+  --color-brand: hsl(var(--hue-brand), 100%, 60%);
+  --color-brand-glow: hsl(var(--hue-brand), 100%, 60%, 0.5);
+  
+  /* Backgrounds (Dark Theme) */
+  --bg-dark: hsl(220, 20%, 8%);
+  --bg-card: hsl(220, 20%, 12%);
+  --bg-glass: hsla(220, 20%, 12%, 0.6);
+  
+  /* Text */
+  --text-main: hsl(0, 0%, 100%);
+  --text-muted: hsl(220, 10%, 70%);
+
+  /* Status */
+  --status-success: hsl(var(--hue-success), 80%, 50%);
+  --status-warning: hsl(var(--hue-warning), 90%, 60%);
+  --status-danger: hsl(var(--hue-danger), 90%, 60%);
+
+  /* Spacing & Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+  
+  --shadow-glow: 0 0 20px var(--color-brand-glow);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Utilities */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.btn {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-brand), hsl(210, 100%, 40%));
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--color-brand-glow);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--status-danger), hsl(0, 80%, 40%));
+  color: white;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+}
+
+.btn-large {
+  padding: 1.5rem;
+  font-size: 1.2rem;
+  width: 100%;
+}
+
+.animate-pulse-slow {
+  animation: pulse-glow 3s infinite;
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(56, 189, 248, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+}
+
+/* Map specific overrides */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #0f172a; /* Match dark theme */
+  font-family: 'Outfit', sans-serif;
+  z-index: 1;
+}
+
+/* Custom Marker animations if needed */
+.marker-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--color-brand);
+  position: absolute;
+  transform: rotate(-45deg);
+  left: 50%;
+  top: 50%;
+  margin: -15px 0 0 -15px;
+  animation-name: bounce;
+  animation-fill-mode: both;
+  animation-duration: 1s;
+}
