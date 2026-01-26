@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, MapPin, AlertTriangle, Activity, CheckCircle } from 'lucide-react';
 import { useTrafficData } from '../hooks/useTrafficData';
+import { ref, onDisconnect } from 'firebase/database';
+import { db } from '../lib/firebase';
 import './OrganizerApp.css';
 
 export default function OrganizerApp({ onBack, user }) {
@@ -24,6 +26,25 @@ export default function OrganizerApp({ onBack, user }) {
             });
         }
     }, [organizers, addOrganizer, user]);
+
+    // Handle presence/disconnect (Leave site/Close Tab)
+    useEffect(() => {
+        const userRef = ref(db, `organizers/${user.id}`);
+
+        // Ensure we rely on 'active' state, but also set it here to be sure
+        updateOrganizer(user.id, { active: true });
+
+        // If user closes tab or loses connection
+        onDisconnect(userRef).update({
+            active: false
+        });
+
+        // If user navigates away (unmount triggers this cleanup)
+        return () => {
+            updateOrganizer(user.id, { active: false });
+            onDisconnect(userRef).cancel();
+        };
+    }, [user.id]); // Depend on user.id, ignore updateOrganizer stability issues
 
     const [gpsStatus, setGpsStatus] = useState('waiting'); // waiting, active, error
 
