@@ -28,16 +28,25 @@ export default function OrganizerApp({ onBack }) {
         }
     }, [organizers, addOrganizer]);
 
+    const [gpsStatus, setGpsStatus] = useState('waiting'); // waiting, active, error
+
     // Real GPS Tracking
     useEffect(() => {
-        if (!active) return;
-
-        if (!navigator.geolocation) {
-            console.error("Geolocation is not supported by your browser");
+        if (!active) {
+            setGpsStatus('off');
             return;
         }
 
+        if (!navigator.geolocation) {
+            setGpsStatus('error');
+            alert("Geolocation is not supported by your browser");
+            return;
+        }
+
+        setGpsStatus('locating');
+
         const handleSuccess = (position) => {
+            setGpsStatus('active');
             updateOrganizer(MY_ID, {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude
@@ -46,12 +55,13 @@ export default function OrganizerApp({ onBack }) {
 
         const handleError = (error) => {
             console.error("GPS Error:", error);
+            setGpsStatus('error');
         };
 
         const watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
             enableHighAccuracy: true,
             maximumAge: 0,
-            timeout: 10000
+            timeout: 20000
         });
 
         return () => navigator.geolocation.clearWatch(watchId);
@@ -86,11 +96,18 @@ export default function OrganizerApp({ onBack }) {
             </div>
 
             <div className="glass-panel location-card">
-                <div className="gps-pulse"></div>
+                <div className={`gps-pulse ${gpsStatus === 'active' ? 'bg-green-500' : gpsStatus === 'error' ? 'bg-red-500 animate-none' : 'bg-yellow-500'}`}></div>
                 <div>
-                    <p className="text-sm text-slate-400">Current Location (GPS)</p>
+                    <p className="text-sm text-slate-400">
+                        {gpsStatus === 'locating' ? 'Locating Satellites...' :
+                            gpsStatus === 'error' ? 'GPS Signal Lost' :
+                                gpsStatus === 'off' ? 'GPS Off' :
+                                    'GPS Active (High Accuracy)'}
+                    </p>
                     <div className="text-white font-mono text-sm">
-                        {me.lat?.toFixed(5)}, {me.lng?.toFixed(5)}
+                        {gpsStatus === 'active' || gpsStatus === 'waiting' ?
+                            `${me.lat?.toFixed(5)}, ${me.lng?.toFixed(5)}` :
+                            'Searching...'}
                     </div>
                 </div>
             </div>
