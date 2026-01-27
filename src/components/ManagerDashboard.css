@@ -199,3 +199,173 @@
         height: 60vh;
     }
 }
+
+/* Sidebar Sections */
+.sidebar-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+}
+
+.section-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+}
+
+.stats-grid {
+    padding: 0;
+}
+
+.alerts-list {
+    padding: 0;
+    max-height: 200px; /* Or adjust as needed */
+}
+
+/* Action Station */
+.action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.action-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+}
+
+.action-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.status-pill {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    text-transform: capitalize;
+}
+
+.status-open {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+.status-closed {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.status-flow-control {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.action-btn-small {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+}
+
+.action-btn-small:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.action-btn-small.btn-open:hover,
+.action-btn-small.btn-open.active {
+    background-color: #3b82f6;
+    border-color: #60a5fa;
+    color: white;
+}
+
+.action-btn-small.btn-flow:hover,
+.action-btn-small.btn-flow.active {
+    background-color: #f59e0b;
+    border-color: #fbbf24;
+    color: white;
+}
+
+.action-btn-small.btn-closed:hover,
+.action-btn-small.btn-closed.active {
+    background-color: #ef4444;
+    border-color: #f87171;
+    color: white;
+}
+
+/* Add Area Form */
+.add-area-form {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: rgba(0,0,0,0.3);
+}
+
+.btn-add {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.flex {
+    display: flex;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}

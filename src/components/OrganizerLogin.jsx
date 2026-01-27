@@ -40,7 +40,6 @@ export default function OrganizerLogin({ onJoin, onBack }) {
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Agent Name (e.g. Officer John)"
                         className="w-full p-4 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-                        autoFocus
                     />
 
                     <button
