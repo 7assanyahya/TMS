@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { User, ArrowRight, ArrowLeft } from 'lucide-react';
-import './OrganizerApp.css'; // Reuse styles
+import { ArrowLeft } from 'lucide-react';
 
 export default function OrganizerLogin({ onJoin, onBack }) {
     const [name, setName] = useState('');
@@ -8,46 +7,42 @@ export default function OrganizerLogin({ onJoin, onBack }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!name.trim()) return;
-
-        // Generate a simple unique ID
         const id = `org-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
-        onJoin({ id, name });
+        onJoin({ id, name: name.trim() });
     };
 
     return (
-        <div className="landing-container">
-            <div className="glass-panel p-8 max-w-md w-full relative">
+        <div className="min-h-screen flex items-center justify-center p-6 bg-surface-2">
+            <div className="w-full max-w-sm bg-surface rounded-lg border border-line shadow-g p-6">
                 <button
                     onClick={onBack}
-                    className="absolute top-4 left-4 text-slate-400 hover:text-white transition-colors"
+                    className="flex items-center gap-1.5 text-sm text-ink-dim hover:text-ink mb-5"
                 >
-                    <ArrowLeft size={24} />
+                    <ArrowLeft size={18} /> Back
                 </button>
 
-                <div className="text-center mb-8 mt-4">
-                    <div className="mx-auto w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400 mb-4">
-                        <User size={32} />
-                    </div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Identify Yourself</h2>
-                    <p className="text-slate-400">Enter your name to join the operations network.</p>
-                </div>
+                <h2 className="text-xl font-medium text-ink">Sign in as Organizer</h2>
+                <p className="text-ink-dim text-sm mt-1 mb-5">Enter your name to join the network.</p>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Agent Name (e.g. Officer John)"
-                        className="w-full p-4 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-                    />
-
+                    <div>
+                        <label htmlFor="name" className="block text-sm text-ink-dim mb-1.5">Name</label>
+                        <input
+                            id="name"
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="e.g. Officer John"
+                            className="w-full px-3 py-2.5 rounded border border-line text-ink placeholder:text-ink-faint outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            autoFocus
+                        />
+                    </div>
                     <button
                         type="submit"
                         disabled={!name.trim()}
-                        className="btn btn-primary w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-2.5 rounded bg-primary text-white font-medium transition-colors hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        Join Network <ArrowRight size={20} />
+                        Continue
                     </button>
                 </form>
             </div>

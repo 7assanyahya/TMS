@@ -1,8 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
-// TODO: Replace the following with your app's Firebase project configuration
-// You can find this in the Firebase Console -> Project Settings
+// Firebase project configuration for the STMS Realtime Database.
 const firebaseConfig = {
     apiKey: "AIzaSyC2TmzGz0riQOmlWcEVt_3NYwWwbHps_mQ",
     authDomain: "tmsp-c9e4d.firebaseapp.com",
