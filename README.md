@@ -1,4 +1,4 @@
-🚥 Smart Traffic Management System (STMS)
+ 🚥 Smart Traffic Management System (STMS)
 Human-as-a-Sensor IoT Integration
 The Smart Traffic Management System (STMS) is a real-time operational platform designed to bridge the gap between field personnel and central command. By utilizing the "Human-as-a-Sensor" concept, the system transforms every field organizer's smartphone into a sophisticated IoT node, providing live traffic intelligence without the need for expensive fixed infrastructure.
 🌟 Project Vision
