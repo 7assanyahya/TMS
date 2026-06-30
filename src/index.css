@@ -1,58 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 @import 'leaflet/dist/leaflet.css';
 @import "tailwindcss";
 
 /* ──────────────────────────────────────────────────────────────────────────
-   STMS — Command-Center / Control-Room design tokens (Tailwind v4 CSS-first)
+   STMS — clean, light, Google-Maps-style design tokens (Tailwind v4)
    ────────────────────────────────────────────────────────────────────────── */
 @theme {
-  /* Layered near-black surfaces */
-  --color-base: #070a0f;
-  --color-panel: #0d1219;
-  --color-panel-2: #131a24;
-  --color-panel-3: #1a2330;
-  --color-line: rgba(255, 255, 255, 0.07);
-  --color-line-strong: rgba(255, 255, 255, 0.14);
+  --color-surface: #ffffff;
+  --color-surface-2: #f1f3f4;
+  --color-line: #dadce0;
 
-  /* Text */
-  --color-ink: #e7edf5;
-  --color-ink-dim: #8b97a8;
-  --color-ink-faint: #5a6677;
+  --color-ink: #202124;
+  --color-ink-dim: #5f6368;
+  --color-ink-faint: #80868b;
 
-  /* Operational accent (live / interactive) */
-  --color-live: #22d3ee;
-  --color-live-dim: #0e7490;
+  --color-primary: #1a73e8;
+  --color-primary-hover: #1765cc;
 
-  /* Status palette — drives data, not decoration */
-  --color-clear: #22c55e;
-  --color-congestion: #f59e0b;
-  --color-accident: #ef4444;
-  --color-emergency: #ff2d55;
+  /* Status — Google-style flat colors */
+  --color-clear: #34a853;
+  --color-congestion: #f9ab00;
+  --color-accident: #ea4335;
 
-  /* Type */
-  --font-sans: 'Outfit', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-
-  /* Motion */
-  --animate-pulse-live: pulse-live 2s ease-in-out infinite;
-  --animate-pulse-alert: pulse-alert 1.4s ease-in-out infinite;
-  --animate-sweep: sweep 3s linear infinite;
+  --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
 }
 
-@keyframes pulse-live {
+@keyframes soft-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-
-@keyframes pulse-alert {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-  70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-@keyframes sweep {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(100%); }
+  50% { opacity: 0.4; }
 }
 
 * {
@@ -67,11 +42,10 @@ html, body, #root {
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-base);
+  background-color: var(--color-surface-2);
   color: var(--color-ink);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 #root {
@@ -79,63 +53,46 @@ body {
   flex-direction: column;
 }
 
-/* Faint grid texture for the ops-console backdrop */
-.ops-grid {
-  background-image:
-    linear-gradient(var(--color-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
-  background-size: 40px 40px;
+/* Google-style elevation */
+.shadow-g {
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+.shadow-g-lg {
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
 }
 
-/* ── Leaflet overrides (cannot be reached by utility classes) ────────────── */
+/* ── Leaflet ──────────────────────────────────────────────────────────────── */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background: #070a0f;
+  background: #e5e3df;
   font-family: var(--font-sans);
   z-index: 1;
 }
 
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: var(--color-panel-2);
-  color: var(--color-ink);
-  border: 1px solid var(--color-line-strong);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+.leaflet-bar a {
+  color: var(--color-ink) !important;
 }
 
-.leaflet-popup-content {
-  margin: 0.75rem 0.9rem;
-  font-size: 0.8rem;
-}
-
-.leaflet-control-attribution {
-  background: rgba(7, 10, 15, 0.7) !important;
-  color: var(--color-ink-faint) !important;
-}
-
-.leaflet-control-attribution a { color: var(--color-ink-dim) !important; }
-
-/* ── Custom map markers (injected as L.divIcon HTML strings) ─────────────── */
+/* ── Map markers (injected as L.divIcon HTML) ──────────────────────────────── */
 .unit-marker {
-  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .unit-marker .dot {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 9999px;
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .unit-marker .ring {
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 9999px;
 }
 
@@ -146,5 +103,5 @@ body {
 .marker-accident .ring,
 .marker-emergency .ring {
   border: 2px solid var(--color-accident);
-  animation: pulse-alert 1.4s ease-in-out infinite;
+  animation: soft-pulse 1.4s ease-in-out infinite;
 }

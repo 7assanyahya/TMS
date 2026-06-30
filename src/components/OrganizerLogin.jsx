@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Smartphone } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export default function OrganizerLogin({ onJoin, onBack }) {
     const [name, setName] = useState('');
@@ -12,49 +12,37 @@ export default function OrganizerLogin({ onJoin, onBack }) {
     };
 
     return (
-        <div className="ops-grid relative min-h-screen flex items-center justify-center p-6">
-            <div className="pointer-events-none absolute inset-0 -z-10">
-                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[50vw] h-[50vw] rounded-full bg-live/10 blur-[120px]" />
-            </div>
-
-            <div className="relative w-full max-w-md rounded-xl border border-line bg-panel p-8">
+        <div className="min-h-screen flex items-center justify-center p-6 bg-surface-2">
+            <div className="w-full max-w-sm bg-surface rounded-lg border border-line shadow-g p-6">
                 <button
                     onClick={onBack}
-                    className="absolute top-5 left-5 text-ink-faint hover:text-ink transition-colors"
-                    aria-label="Back"
+                    className="flex items-center gap-1.5 text-sm text-ink-dim hover:text-ink mb-5"
                 >
-                    <ArrowLeft size={20} />
+                    <ArrowLeft size={18} /> Back
                 </button>
 
-                <div className="text-center mb-8 mt-2">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-live/10 text-live mb-4">
-                        <Smartphone size={28} />
-                    </div>
-                    <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-live mb-2">
-                        Field Node · Identify
-                    </div>
-                    <h2 className="text-2xl font-bold text-ink">Register Unit</h2>
-                    <p className="text-ink-dim text-sm mt-1.5">
-                        Enter your call sign to join the operations network.
-                    </p>
-                </div>
+                <h2 className="text-xl font-medium text-ink">Sign in as Organizer</h2>
+                <p className="text-ink-dim text-sm mt-1 mb-5">Enter your name to join the network.</p>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="e.g. Unit Bravo / Officer John"
-                        className="w-full px-4 py-3.5 rounded-lg bg-panel-2 border border-line text-ink placeholder:text-ink-faint outline-none focus:border-live/60 transition-colors"
-                        autoFocus
-                    />
+                    <div>
+                        <label htmlFor="name" className="block text-sm text-ink-dim mb-1.5">Name</label>
+                        <input
+                            id="name"
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="e.g. Officer John"
+                            className="w-full px-3 py-2.5 rounded border border-line text-ink placeholder:text-ink-faint outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            autoFocus
+                        />
+                    </div>
                     <button
                         type="submit"
                         disabled={!name.trim()}
-                        className="w-full py-3.5 rounded-lg bg-live font-semibold flex items-center justify-center gap-2 transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
-                        style={{ color: '#06212b' }}
+                        className="w-full py-2.5 rounded bg-primary text-white font-medium transition-colors hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        Join Network <ArrowRight size={18} />
+                        Continue
                     </button>
                 </form>
             </div>

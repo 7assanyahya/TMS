@@ -32,7 +32,7 @@ dashboard, letting managers make data-driven decisions in seconds.
 | Layer | Technology |
 |---|---|
 | Frontend | React 19 + Vite 7 |
-| Styling | Tailwind CSS v4 (command-center / control-room design system) |
+| Styling | Tailwind CSS v4 (clean, light, Google-Maps-style design) |
 | Mapping | Leaflet / React-Leaflet |
 | Realtime backend | Firebase Realtime Database |
 | Icons | lucide-react |

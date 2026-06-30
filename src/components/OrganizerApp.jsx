@@ -11,9 +11,9 @@ const PRESENCE_OPTIONS = [
 ];
 
 const REPORTS = [
-    { key: 'clear', label: 'Fluid', icon: CheckCircle, cssVar: 'var(--color-clear)', idleIcon: 'text-clear', ring: 'ring-clear' },
-    { key: 'congestion', label: 'Congested', icon: Activity, cssVar: 'var(--color-congestion)', idleIcon: 'text-congestion', ring: 'ring-congestion' },
-    { key: 'accident', label: 'Blocked', icon: AlertTriangle, cssVar: 'var(--color-accident)', idleIcon: 'text-accident', ring: 'ring-accident' },
+    { key: 'clear', label: 'Fluid', icon: CheckCircle, color: 'var(--color-clear)' },
+    { key: 'congestion', label: 'Congested', icon: Activity, color: 'var(--color-congestion)' },
+    { key: 'accident', label: 'Blocked', icon: AlertTriangle, color: 'var(--color-accident)' },
 ];
 
 export default function OrganizerApp({ onBack, user }) {
@@ -24,7 +24,7 @@ export default function OrganizerApp({ onBack, user }) {
     const command = useOrganizerCommands(user.id);
     const me = organizers.find((o) => o.id === user.id) || { status: 'clear', presence: 'active' };
 
-    // Register this unit on the network once
+    // Register this unit once
     useEffect(() => {
         const exists = organizers.find((o) => o.id === user.id);
         if (!exists) {
@@ -40,7 +40,7 @@ export default function OrganizerApp({ onBack, user }) {
         }
     }, [organizers, addOrganizer, user]);
 
-    // Presence/connection lifecycle — mark online now, offline on disconnect/unmount
+    // Online/offline lifecycle
     useEffect(() => {
         const userRef = ref(db, `organizers/${user.id}`);
         updateOrganizer(user.id, { online: true });
@@ -52,7 +52,7 @@ export default function OrganizerApp({ onBack, user }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user.id]);
 
-    // Real GPS tracking
+    // GPS tracking
     useEffect(() => {
         if (!navigator.geolocation) {
             setGpsStatus('error');
@@ -72,115 +72,96 @@ export default function OrganizerApp({ onBack, user }) {
         return () => navigator.geolocation.clearWatch(watchId);
     }, [updateOrganizer, user.id]);
 
-    const presenceLabel = PRESENCE_OPTIONS.find((p) => p.key === me.presence)?.label || 'Active';
     const showCommand = command && command.timestamp !== dismissedTs;
 
     return (
-        <div className="ops-grid min-h-screen max-w-xl mx-auto flex flex-col p-5">
-            {/* Header */}
-            <header className="flex items-center justify-between mb-5">
-                <button
-                    onClick={onBack}
-                    className="w-11 h-11 rounded-lg border border-line bg-panel flex items-center justify-center text-ink-dim hover:text-ink transition-colors"
-                    aria-label="Back"
-                >
-                    <ArrowLeft size={18} />
+        <div className="min-h-screen flex flex-col bg-surface-2">
+            {/* Top bar */}
+            <header className="flex items-center gap-3 bg-surface border-b border-line px-4 py-3 shadow-g">
+                <button onClick={onBack} className="text-ink-dim hover:text-ink" aria-label="Back">
+                    <ArrowLeft size={22} />
                 </button>
-                <div className="flex items-center gap-3">
-                    <div className="text-right">
-                        <div className="font-semibold text-ink leading-tight">{user.name}</div>
-                        <div className={`font-mono text-[10px] uppercase tracking-widest ${me.presence === 'emergency' ? 'text-emergency' : 'text-live'}`}>
-                            {presenceLabel}
-                        </div>
-                    </div>
-                    <div className="w-11 h-11 rounded-lg bg-live/15 text-live flex items-center justify-center font-bold">
-                        {user.name.charAt(0).toUpperCase()}
-                    </div>
-                </div>
-            </header>
-
-            {/* Incoming command */}
-            {showCommand && (
-                <div className="relative flex items-start gap-3 rounded-lg border border-live/40 bg-live/10 p-4 mb-5">
-                    <Bell size={18} className="text-live mt-0.5 shrink-0" />
-                    <div className="flex-1">
-                        <div className="font-mono text-[10px] uppercase tracking-widest text-live">Command from Center</div>
-                        <div className="text-ink font-medium mt-0.5">{command.message}</div>
-                    </div>
-                    <button onClick={() => setDismissedTs(command.timestamp)} className="text-ink-faint hover:text-ink">
-                        <X size={16} />
-                    </button>
-                </div>
-            )}
-
-            {/* GPS readout */}
-            <div className="flex items-center gap-3 rounded-lg border border-line bg-panel p-4 mb-6">
-                <span className="relative flex w-3 h-3">
-                    {gpsStatus === 'active' && (
-                        <span className="absolute inline-flex w-full h-full rounded-full bg-clear opacity-60 animate-ping" />
-                    )}
-                    <span className={`relative inline-flex w-3 h-3 rounded-full ${
-                        gpsStatus === 'active' ? 'bg-clear' : gpsStatus === 'error' ? 'bg-accident' : 'bg-congestion'
-                    }`} />
-                </span>
-                <div>
+                <div className="flex-1">
+                    <div className="font-medium text-ink leading-tight">{user.name}</div>
                     <div className="text-xs text-ink-dim">
-                        {gpsStatus === 'locating' ? 'Acquiring satellites…' : gpsStatus === 'error' ? 'GPS signal lost' : 'GPS active · high accuracy'}
-                    </div>
-                    <div className="font-mono text-sm text-ink">
                         {gpsStatus === 'active' && me.lat != null
                             ? `${me.lat.toFixed(5)}, ${me.lng.toFixed(5)}`
-                            : 'searching…'}
+                            : gpsStatus === 'error' ? 'GPS unavailable' : 'Locating…'}
                     </div>
                 </div>
-            </div>
+                <span className="flex items-center gap-1.5 text-xs text-ink-dim">
+                    <span className={`w-2 h-2 rounded-full ${
+                        gpsStatus === 'active' ? 'bg-clear' : gpsStatus === 'error' ? 'bg-accident' : 'bg-congestion'
+                    }`} />
+                    GPS
+                </span>
+            </header>
 
-            {/* Report buttons */}
-            <div className="flex-1 flex flex-col justify-center">
-                <h2 className="text-center font-mono text-[11px] uppercase tracking-[0.3em] text-ink-dim mb-4">
-                    Report Road Status
-                </h2>
-                <div className="grid gap-4">
+            <main className="flex-1 max-w-md w-full mx-auto p-4 flex flex-col">
+                {/* Incoming command */}
+                {showCommand && (
+                    <div className="flex items-start gap-3 bg-surface border-l-4 border-primary rounded shadow-g p-3 mb-4">
+                        <Bell size={18} className="text-primary mt-0.5 shrink-0" />
+                        <div className="flex-1">
+                            <div className="text-xs text-ink-dim">Message from Command Center</div>
+                            <div className="text-ink">{command.message}</div>
+                        </div>
+                        <button onClick={() => setDismissedTs(command.timestamp)} className="text-ink-faint hover:text-ink">
+                            <X size={18} />
+                        </button>
+                    </div>
+                )}
+
+                {/* Report */}
+                <h2 className="text-sm font-medium text-ink-dim mb-3 mt-2">Report road status</h2>
+                <div className="flex flex-col gap-3">
                     {REPORTS.map((r) => {
                         const active = me.status === r.key;
                         return (
                             <button
                                 key={r.key}
                                 onClick={() => updateOrganizer(user.id, { status: r.key })}
-                                className={`flex items-center gap-4 rounded-xl border p-5 transition-all ${
-                                    active
-                                        ? `border-transparent ring-2 ${r.ring}`
-                                        : 'border-line hover:border-line-strong opacity-90 hover:opacity-100'
+                                className={`flex items-center gap-3 rounded-lg border p-4 bg-surface transition-shadow ${
+                                    active ? 'shadow-g' : 'border-line hover:shadow-g'
                                 }`}
-                                style={{ background: active ? r.cssVar : 'var(--color-panel-2)' }}
+                                style={active ? { borderColor: r.color, borderWidth: 2 } : undefined}
                             >
-                                <r.icon size={28} className={active ? 'text-white' : r.idleIcon} />
-                                <span className={`text-lg font-semibold ${active ? 'text-white' : 'text-ink'}`}>{r.label}</span>
+                                <span
+                                    className="flex items-center justify-center w-10 h-10 rounded-full text-white shrink-0"
+                                    style={{ background: r.color }}
+                                >
+                                    <r.icon size={20} />
+                                </span>
+                                <span className="font-medium text-ink">{r.label}</span>
+                                {active && (
+                                    <span className="ml-auto text-xs font-medium" style={{ color: r.color }}>
+                                        Reported
+                                    </span>
+                                )}
                             </button>
                         );
                     })}
                 </div>
-            </div>
 
-            {/* Presence toggle */}
-            <div className="grid grid-cols-3 gap-2.5 mt-6">
-                {PRESENCE_OPTIONS.map((opt) => {
-                    const active = me.presence === opt.key;
-                    return (
-                        <button
-                            key={opt.key}
-                            onClick={() => setPresence(user.id, opt.key)}
-                            className={`flex items-center justify-center gap-1.5 rounded-lg border py-3 text-sm transition-all ${
-                                active
-                                    ? 'border-live/60 bg-live/10 text-ink'
-                                    : 'border-line bg-panel text-ink-dim hover:text-ink'
-                            }`}
-                        >
-                            <opt.icon size={16} /> {opt.label}
-                        </button>
-                    );
-                })}
-            </div>
+                {/* Presence */}
+                <h2 className="text-sm font-medium text-ink-dim mb-3 mt-6">Your status</h2>
+                <div className="flex bg-surface border border-line rounded-lg overflow-hidden">
+                    {PRESENCE_OPTIONS.map((opt, i) => {
+                        const active = me.presence === opt.key;
+                        return (
+                            <button
+                                key={opt.key}
+                                onClick={() => setPresence(user.id, opt.key)}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-sm transition-colors ${
+                                    i > 0 ? 'border-l border-line' : ''
+                                } ${active ? 'bg-primary text-white' : 'text-ink-dim hover:bg-surface-2'}`}
+                            >
+                                <opt.icon size={16} /> {opt.label}
+                            </button>
+                        );
+                    })}
+                </div>
+            </main>
         </div>
     );
 }
