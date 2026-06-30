@@ -1,107 +1,104 @@
-import { useState, useEffect, useCallback } from 'react';
-import { socket, API_URL } from '../lib/socket';
+import { useState, useEffect } from 'react';
+import { ref, onValue, set, update, push, remove } from 'firebase/database';
+import { db } from '../lib/firebase';
 
+/**
+ * Central Firebase Realtime Database data layer for the command center.
+ * Subscribes to live organizers + areas and exposes mutation helpers.
+ */
 export function useTrafficData() {
     const [organizers, setOrganizers] = useState([]);
     const [areas, setAreas] = useState([]);
-    const [commands, setCommands] = useState([]);
 
-    // Real-time organizer sync over the socket
+    // Live organizers
     useEffect(() => {
-        const handleSync = (data) => setOrganizers(data);
-        socket.on('organizers:sync', handleSync);
-        socket.on('organizers:update', handleSync);
-        return () => {
-            socket.off('organizers:sync', handleSync);
-            socket.off('organizers:update', handleSync);
-        };
-    }, []);
-
-    // Areas: initial REST fetch, then live updates over the socket
-    useEffect(() => {
-        fetch(`${API_URL}/areas`)
-            .then((res) => (res.ok ? res.json() : []))
-            .then(setAreas)
-            .catch((err) => console.error('Failed to load areas', err));
-
-        const handleCreated = (area) => setAreas((prev) => [...prev, area]);
-        const handleUpdated = (area) =>
-            setAreas((prev) => prev.map((a) => (a.id === area.id ? area : a)));
-        const handleDeleted = ({ id }) => setAreas((prev) => prev.filter((a) => a.id !== id));
-
-        socket.on('area:created', handleCreated);
-        socket.on('area:updated', handleUpdated);
-        socket.on('area:deleted', handleDeleted);
-        return () => {
-            socket.off('area:created', handleCreated);
-            socket.off('area:updated', handleUpdated);
-            socket.off('area:deleted', handleDeleted);
-        };
-    }, []);
-
-    // Commands dispatched from the manager, received by this client's organizer
-    useEffect(() => {
-        const handleCommand = (command) => setCommands((prev) => [...prev, command]);
-        socket.on('command:received', handleCommand);
-        return () => socket.off('command:received', handleCommand);
-    }, []);
-
-    const joinOrganizer = useCallback((id, name, lat, lng) => {
-        socket.emit('organizer:join', { id, name, lat, lng });
-    }, []);
-
-    const updateLocation = useCallback((id, lat, lng) => {
-        socket.emit('organizer:location', { id, lat, lng });
-    }, []);
-
-    const reportStatus = useCallback((id, status) => {
-        socket.emit('organizer:status', { id, status });
-    }, []);
-
-    const setPresence = useCallback((id, presence) => {
-        socket.emit('organizer:presence', { id, presence });
-    }, []);
-
-    const sendCommand = useCallback((organizerId, message) => {
-        socket.emit('manager:command', { organizerId, message });
-    }, []);
-
-    const addArea = useCallback(async (areaData) => {
-        const res = await fetch(`${API_URL}/areas`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(areaData),
+        const organizersRef = ref(db, 'organizers');
+        const unsubscribe = onValue(organizersRef, (snapshot) => {
+            const data = snapshot.val();
+            setOrganizers(data ? Object.values(data) : []);
+        }, (error) => {
+            console.error('Firebase connection error (organizers). Check config.', error);
         });
-        if (!res.ok) throw new Error('Failed to add area');
-        return res.json();
+        return () => unsubscribe();
     }, []);
 
-    const updateAreaStatus = useCallback(async (id, status) => {
-        const res = await fetch(`${API_URL}/areas/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status }),
+    // Live areas
+    useEffect(() => {
+        const areasRef = ref(db, 'areas');
+        const unsubscribe = onValue(areasRef, (snapshot) => {
+            const data = snapshot.val();
+            setAreas(data ? Object.values(data) : []);
+        }, (error) => {
+            console.error('Firebase connection error (areas). Check config.', error);
         });
-        if (!res.ok) throw new Error('Failed to update area');
-        return res.json();
+        return () => unsubscribe();
     }, []);
 
-    const removeArea = useCallback(async (id) => {
-        const res = await fetch(`${API_URL}/areas/${id}`, { method: 'DELETE' });
-        if (!res.ok && res.status !== 404) throw new Error('Failed to remove area');
-    }, []);
+    // ── Organizer mutations ──────────────────────────────────────────────
+    const addOrganizer = (organizer) => {
+        set(ref(db, `organizers/${organizer.id}`), organizer);
+    };
+
+    const updateOrganizer = (id, newData) => {
+        update(ref(db, `organizers/${id}`), newData);
+    };
+
+    const setPresence = (id, presence) => {
+        update(ref(db, `organizers/${id}`), { presence });
+    };
+
+    // ── Area mutations ───────────────────────────────────────────────────
+    const updateAreaStatus = (id, status) => {
+        update(ref(db, `areas/${id}`), { status });
+    };
+
+    const addArea = (areaData) => {
+        const newAreaRef = push(ref(db, 'areas'));
+        const newAreaId = newAreaRef.key;
+        set(newAreaRef, { id: newAreaId, ...areaData });
+        return newAreaId;
+    };
+
+    const removeArea = (id) => {
+        remove(ref(db, `areas/${id}`));
+    };
+
+    // ── Task dispatch (manager → organizer) ──────────────────────────────
+    const sendCommand = (organizerId, message) => {
+        set(ref(db, `commands/${organizerId}`), {
+            message,
+            timestamp: Date.now(),
+        });
+    };
 
     return {
         organizers,
         areas,
-        commands,
-        joinOrganizer,
-        updateLocation,
-        reportStatus,
+        addOrganizer,
+        updateOrganizer,
         setPresence,
-        sendCommand,
-        addArea,
         updateAreaStatus,
+        addArea,
         removeArea,
+        sendCommand,
     };
+}
+
+/**
+ * Subscribe to commands dispatched to a single organizer.
+ * Returns the latest command object ({ message, timestamp }) or null.
+ */
+export function useOrganizerCommands(organizerId) {
+    const [command, setCommand] = useState(null);
+
+    useEffect(() => {
+        if (!organizerId) return;
+        const commandRef = ref(db, `commands/${organizerId}`);
+        const unsubscribe = onValue(commandRef, (snapshot) => {
+            setCommand(snapshot.val() || null);
+        });
+        return () => unsubscribe();
+    }, [organizerId]);
+
+    return command;
 }

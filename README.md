@@ -2,99 +2,94 @@
 
 ### Human-as-a-Sensor IoT Integration
 
-The Smart Traffic Management System (STMS) is a real-time operational platform that bridges field personnel and central command. Using the "Human-as-a-Sensor" concept, every field organizer's smartphone becomes an IoT node, streaming live traffic intelligence to a central dashboard — no fixed cameras or sensors required.
+STMS is a real-time operational platform that bridges field personnel and central command.
+Using the "Human-as-a-Sensor" concept, every field organizer's smartphone becomes an IoT node,
+streaming live traffic intelligence to a central command center — no fixed cameras or sensors required.
 
-## 🌟 Project Vision
+## 🌟 Vision
 
-Traditional traffic systems rely on costly cameras and sensors. This system leverages the agility of human organizers: each one reports location, road status, and incidents directly to a centralized dashboard, letting managers make data-driven decisions in seconds.
+Traditional traffic systems rely on costly cameras and sensors. STMS leverages the agility of
+human organizers: each one reports location, road status, and incidents directly to a centralized
+dashboard, letting managers make data-driven decisions in seconds.
 
-## 🛠 Key Features
+## 🛠 Features
 
-### 👤 Organizer Interface (The IoT Node)
-- **Real-Time Geolocation** — continuous high-accuracy GPS tracking streamed to the command center over WebSockets.
-- **One-Tap Reporting** — instant road status reports: 🟢 Fluid, 🟡 Congested, 🔴 Blocked.
-- **Presence Management** — toggle between Active, On Break, or Emergency.
-- **Bi-Directional Communication** — receive instructions dispatched live from the command center.
+### 👤 Field Organizer (the IoT node)
+- **Real-time geolocation** — continuous high-accuracy GPS, streamed live to the command center.
+- **One-tap reporting** — 🟢 Fluid · 🟡 Congested · 🔴 Blocked.
+- **Presence management** — Active / On Break / Emergency toggle.
+- **Incoming commands** — receive movement orders dispatched from the command center in real time.
 
-### 📊 Manager Dashboard (The Command Center)
-- **Geospatial Live Map** — bird's-eye view of every online organizer and managed traffic zone.
-- **Color-Coded Areas** — road/zone polylines change color (open / flow-control / closed) based on manager actions.
-- **Instant Alert System** — audio-visual notification the moment an organizer reports an accident or declares an emergency.
-- **Task Dispatching** — select an organizer and push a direct instruction to their device.
-
-## 🏗 System Architecture
-
-Real-time data loop:
-
-1. **Sensing** — the Organizer app collects GPS coordinates and manual status input.
-2. **Transmission** — data is sent over a Socket.io WebSocket connection for near-zero latency.
-3. **Processing** — the backend validates state, caches the latest organizer snapshot in Redis, and broadcasts it to every connected dashboard.
-4. **Logging** — status reports and dispatched commands are persisted to MongoDB for history/auditing.
-5. **Action** — the manager analyzes the map and dispatches commands back down to specific organizers.
+### 📊 Command Center (the manager dashboard)
+- **Live geospatial map** — every online unit and managed zone at a glance.
+- **Color-coded zones** — roads/zones change color (open / flow-control / closed) on manager action.
+- **Critical-incident alerts** — audio-visual notification the instant a unit reports an accident
+  or declares an emergency.
+- **Task dispatch** — select a unit and push a direct instruction to their device.
 
 ## 💻 Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19 + Vite |
+| Frontend | React 19 + Vite 7 |
+| Styling | Tailwind CSS v4 (command-center / control-room design system) |
 | Mapping | Leaflet / React-Leaflet |
-| Real-Time Engine | Socket.io |
-| Backend | Node.js & Express |
-| Live Location Cache | Redis |
-| Persistent Logs (areas, reports, commands) | MongoDB / Mongoose |
+| Realtime backend | Firebase Realtime Database |
+| Icons | lucide-react |
+
+The entire app is a client-side SPA backed by **Firebase Realtime Database** — every organizer
+and the command center subscribe to the same live data, so updates propagate across devices
+instantly with no custom server to run.
+
+## 🗂 Data Model (Firebase Realtime DB)
+
+```
+organizers/{id} : { id, name, lat, lng,
+                    status: clear|congestion|accident,
+                    presence: active|break|emergency,
+                    online: bool }            // online via onDisconnect
+areas/{id}      : { id, name,
+                    type: road|walkway|parking|event_space,
+                    status: open|flow-control|closed,
+                    path: [[lat,lng], …] }
+commands/{id}   : { message, timestamp }      // manager → organizer dispatch
+```
 
 ## 📁 Project Layout
 
 ```
-TMS/
-├── src/             # React frontend (Organizer app + Manager dashboard)
-├── server/          # Express + Socket.io backend
-│   └── src/
-│       ├── config/    # Mongo & Redis connections
-│       ├── models/    # Mongoose schemas (Area, ReportLog, CommandLog)
-│       ├── routes/    # REST API (area CRUD)
-│       └── sockets/   # Real-time event handlers
-└── docker-compose.yml # Local MongoDB + Redis
+src/
+├── App.jsx                  # role/view state machine + session persistence
+├── index.css                # Tailwind v4 import + @theme design tokens + Leaflet/marker globals
+├── lib/firebase.js          # Firebase app + Realtime DB handle
+├── hooks/useTrafficData.js  # live subscriptions + mutations (organizers, areas, commands)
+└── components/
+    ├── Landing.jsx           # role selection console
+    ├── OrganizerLogin.jsx    # unit registration
+    ├── OrganizerApp.jsx      # field node: GPS, reporting, presence, incoming commands
+    ├── ManagerDashboard.jsx  # command center: map, stats, zone control, dispatch, alerts
+    ├── AddAreaForm.jsx       # draw-on-map zone editor
+    └── MapDrawHandler.jsx    # leaflet click-to-draw helper
 ```
 
-## 🚀 Installation & Setup
-
-### 1. Start MongoDB & Redis
-
-```bash
-docker compose up -d
-```
-
-(Or point `MONGODB_URI` / `REDIS_URL` at your own instances.)
-
-### 2. Backend
-
-```bash
-cd server
-npm install
-cp .env.example .env   # adjust PORT / CLIENT_ORIGIN / MONGODB_URI / REDIS_URL
-npm run dev
-```
-
-The backend listens on `http://localhost:5000` by default and exposes:
-- `GET /health` — health check
-- `REST /api/areas` — area CRUD (create/list/update status/delete)
-- A Socket.io endpoint for organizer location/status/presence and manager-to-organizer command dispatch.
-
-> If Redis is unreachable the server falls back to an in-memory organizer cache (dev convenience). If MongoDB is unreachable, area persistence and history logging are disabled but live tracking keeps working.
-
-### 3. Frontend
+## 🚀 Getting Started
 
 ```bash
 npm install
-cp .env.example .env   # set VITE_SOCKET_URL / VITE_API_URL if not running on localhost:5000
-npm run dev
+npm run dev      # start the dev server (http://localhost:5173)
+npm run build    # production build
+npm run lint     # eslint
 ```
 
-Open the printed Vite URL on your laptop (Command Center) and on your phone (Field Organizer) — both connect to the same backend and sync in real time.
+The Firebase project config ships in `src/lib/firebase.js` (Realtime Database `tmsp-c9e4d`).
+To point at your own project, replace that config with your Firebase console values and ensure
+Realtime Database rules permit the reads/writes you need.
+
+Open the app on a phone as **Field Organizer** and on a laptop as **Command Center** — the map
+updates in real time as the organizer moves and reports.
 
 ## 🗺 Roadmap
 
-- [ ] AI Integration: predictive congestion forecasting from historical field data.
-- [ ] Native Mobile App: Flutter/React Native client for better battery use and background GPS.
-- [ ] Hardware Extension: LoRaWAN sensor integration for areas without cellular coverage.
+- [ ] AI: predictive congestion forecasting from historical field data.
+- [ ] Native mobile app (Flutter / React Native) for background GPS + battery optimization.
+- [ ] LoRaWAN hardware sensors for areas without cellular coverage.
