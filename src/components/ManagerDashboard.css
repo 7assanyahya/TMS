@@ -157,6 +157,46 @@
     animation: pulse-danger-marker 1.5s infinite;
 }
 
+.marker-emergency .marker-inner {
+    border: 3px solid #ef4444;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4);
+}
+
+.critical-alerts-stack {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 320px;
+}
+
+.critical-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.12);
+    animation: pulse-danger 2s infinite;
+}
+
+@keyframes pulse-danger {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
 @keyframes pulse-danger-marker {
     0% {
         box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
